@@ -16,7 +16,7 @@ function loadEnv(string $path): void
     foreach ($lines as $line) {
         $line = trim($line);
 
-        if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) {
+        if (str_starts_with($line, '#') || !str_contains($line, '=')) {
             continue;
         }
 
@@ -56,10 +56,11 @@ function env(string $key, ?string $default = null): ?string
 
 const EVENT_PRICE = 50.00;
 const EVENT_CURRENCY = 'BRL';
+const MERCADOPAGO_API_TIMEOUT = 20;
 
 function appBaseUrl(): string
 {
-    return rtrim(env('APP_URL', 'http://localhost:8000') ?? 'http://localhost:8000', '/');
+    return rtrim((string) env('APP_URL', 'http://localhost:8000'), '/');
 }
 
 function mercadopagoAccessToken(): ?string

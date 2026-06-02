@@ -43,7 +43,7 @@ function saveRegistration(array $registration): void
 {
     $dir = __DIR__ . '/data';
     if (!is_dir($dir)) {
-        mkdir($dir, 0775, true);
+        mkdir($dir, 0700, true);
     }
 
     $line = json_encode($registration, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

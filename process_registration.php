@@ -13,9 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $nome = trim((string) ($_POST['nome'] ?? ''));
-$cpf = preg_replace('/\D+/', '', (string) ($_POST['cpf'] ?? '')) ?? '';
+$cpfRaw = preg_replace('/\D+/', '', (string) ($_POST['cpf'] ?? ''));
+$cpf = is_string($cpfRaw) ? $cpfRaw : '';
 $email = trim((string) ($_POST['email'] ?? ''));
-$telefone = preg_replace('/\D+/', '', (string) ($_POST['telefone'] ?? '')) ?? '';
+$telefoneRaw = preg_replace('/\D+/', '', (string) ($_POST['telefone'] ?? ''));
+$telefone = is_string($telefoneRaw) ? $telefoneRaw : '';
 $categoria = trim((string) ($_POST['categoria'] ?? ''));
 
 $old = [
@@ -104,7 +106,7 @@ curl_setopt_array($ch, [
         'Content-Type: application/json',
     ],
     CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-    CURLOPT_TIMEOUT => 20,
+    CURLOPT_TIMEOUT => MERCADOPAGO_API_TIMEOUT,
 ]);
 
 $response = curl_exec($ch);
@@ -112,8 +114,14 @@ $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
 $curlError = curl_error($ch);
 curl_close($ch);
 
-if ($response === false || $httpCode >= 400 || $curlError !== '') {
-    setFormState($old, ['checkout' => 'Não foi possível iniciar o pagamento agora. Tente novamente em instantes.']);
+if ($curlError !== '' || $response === false) {
+    setFormState($old, ['checkout' => 'Falha de conexão ao Mercado Pago. Verifique sua internet e tente novamente.']);
+    header('Location: index.php#inscricao');
+    exit;
+}
+
+if ($httpCode >= 400) {
+    setFormState($old, ['checkout' => 'O Mercado Pago recusou a solicitação. Verifique suas credenciais de integração.']);
     header('Location: index.php#inscricao');
     exit;
 }
