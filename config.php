@@ -72,3 +72,38 @@ function mercadopagoNotificationUrl(): ?string
 {
     return env('MERCADOPAGO_NOTIFICATION_URL');
 }
+
+function dbHost(): string
+{
+    return (string) env('DB_HOST', '127.0.0.1');
+}
+
+function dbPort(): string
+{
+    return (string) env('DB_PORT', '3306');
+}
+
+function dbName(): string
+{
+    return (string) env('DB_NAME', 'semana_enfermagem');
+}
+
+function dbUser(): string
+{
+    return (string) env('DB_USER', 'root');
+}
+
+function dbPass(): string
+{
+    return (string) env('DB_PASS', '');
+}
+
+function adminUsername(): string
+{
+    return (string) env('ADMIN_USERNAME', 'admin');
+}
+
+function adminPassword(): string
+{
+    return (string) env('ADMIN_PASSWORD', 'admin123');
+}

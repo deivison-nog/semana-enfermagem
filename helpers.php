@@ -39,21 +39,6 @@ function clearOldInputs(): void
     unset($_SESSION['old']);
 }
 
-function saveRegistration(array $registration): void
-{
-    $dir = __DIR__ . '/data';
-    if (!is_dir($dir)) {
-        mkdir($dir, 0700, true);
-    }
-
-    $line = json_encode($registration, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    if ($line === false) {
-        return;
-    }
-
-    file_put_contents($dir . '/registrations.log', $line . PHP_EOL, FILE_APPEND | LOCK_EX);
-}
-
 function allowedCategories(): array
 {
     return [

@@ -6,6 +6,7 @@ session_start();
 
 require __DIR__ . '/config.php';
 require __DIR__ . '/helpers.php';
+require __DIR__ . '/db.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: index.php');
@@ -83,7 +84,7 @@ $payload = [
         'failure' => $baseUrl . '/payment_failure.php',
     ],
     'auto_return' => 'approved',
-    'statement_descriptor' => 'SEMANA ENFERMAGEM',
+    'statement_descriptor' => 'SEMANA COLAR',
     'external_reference' => $externalReference,
     'metadata' => [
         'cpf' => $cpf,
@@ -135,16 +136,23 @@ if (!is_string($checkoutUrl) || $checkoutUrl === '') {
     exit;
 }
 
-saveRegistration([
-    'created_at' => date(DATE_ATOM),
-    'external_reference' => $externalReference,
-    'nome' => $nome,
-    'cpf' => $cpf,
-    'email' => $email,
-    'telefone' => $telefone,
-    'categoria' => $categoria,
-    'status' => 'checkout_iniciado',
-]);
+try {
+    createRegistration([
+        'external_reference' => $externalReference,
+        'nome' => $nome,
+        'cpf' => $cpf,
+        'email' => $email,
+        'telefone' => $telefone,
+        'categoria' => $categoria,
+        'amount' => EVENT_PRICE,
+        'currency' => EVENT_CURRENCY,
+        'payment_status' => 'checkout_iniciado',
+    ]);
+} catch (Throwable $exception) {
+    setFormState($old, ['checkout' => 'Não foi possível salvar sua inscrição no banco de dados. Verifique a configuração SQL.']);
+    header('Location: index.php#inscricao');
+    exit;
+}
 
 clearOldInputs();
 $_SESSION['success'] = 'Inscrição validada. Você será redirecionado para concluir o pagamento.';

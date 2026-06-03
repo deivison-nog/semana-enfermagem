@@ -3,12 +3,25 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/helpers.php';
+require_once __DIR__ . '/db.php';
 
-function renderPaymentPage(string $title, string $message, string $badgeClass): void
+function renderPaymentPage(string $title, string $message, string $badgeClass, string $internalStatus): void
 {
     $paymentId = $_GET['payment_id'] ?? null;
     $status = $_GET['status'] ?? null;
     $externalReference = $_GET['external_reference'] ?? null;
+
+    $statusUpdateError = null;
+
+    if (is_string($externalReference) && $externalReference !== '') {
+        try {
+            $paymentDate = $internalStatus === 'approved' ? date('Y-m-d H:i:s') : null;
+            $safePaymentId = is_string($paymentId) ? $paymentId : null;
+            updateRegistrationPaymentStatus($externalReference, $internalStatus, $safePaymentId, $paymentDate);
+        } catch (Throwable $exception) {
+            $statusUpdateError = 'Não foi possível atualizar o status no banco de dados.';
+        }
+    }
 
     ?>
     <!DOCTYPE html>
@@ -24,6 +37,10 @@ function renderPaymentPage(string $title, string $message, string $badgeClass): 
             <span class="status-badge <?= h($badgeClass) ?>"><?= h($title) ?></span>
             <h1><?= h($title) ?></h1>
             <p><?= h($message) ?></p>
+
+            <?php if ($statusUpdateError !== null): ?>
+                <p class="error-block"><?= h($statusUpdateError) ?></p>
+            <?php endif; ?>
 
             <ul>
                 <?php if (is_string($paymentId) && $paymentId !== ''): ?>

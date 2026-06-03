@@ -28,6 +28,7 @@ $categories = allowedCategories();
                 <a href="#sobre">Sobre</a>
                 <a href="#programacao">Programação</a>
                 <a href="#inscricao">Inscrição</a>
+                <a href="admin_login.php">Admin</a>
             </div>
         </nav>
         <section class="hero-grid">
@@ -163,8 +164,7 @@ $categories = allowedCategories();
             <article class="card compact"><strong>Secretaria Municipal de Saúde</strong><p>ELIONAI ALMEIDA DE SOUSA</p></article>
             <article class="card compact"><strong>Coordenação da Atenção Básica</strong><p>ANA CLEO BORGES</p></article>
             <article class="card compact"><strong>Coordenação de Educação Permanente</strong><p>TAMYRES MARIA SANTOS DA SILVA</p></article>
-            <article class="card compact"><strong>Coordenação de Enfermagem RT Unidade Mista</strong><p>MARINALVA CARDOSO FAVACHO</p></article>
-            <article class="card compact"><strong>Equipe Administrativa</strong><p>Apoio institucional local</p></article>
+                        <article class="card compact"><strong>Equipe Administrativa</strong><p>Apoio institucional local</p></article>
         </div>
     </section>
 </main>

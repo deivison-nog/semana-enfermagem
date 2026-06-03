@@ -185,3 +185,36 @@ input, select {
     align-items: flex-start;
   }
 }
+
+.admin-hero {
+  padding-bottom: 2rem;
+}
+
+.admin-login-form {
+  max-width: 520px;
+  margin-top: 1rem;
+}
+
+.table-card {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .92rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: .7rem .6rem;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.admin-table thead th {
+  background: #ecfeff;
+  color: #0f172a;
+}
