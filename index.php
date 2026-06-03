@@ -45,7 +45,7 @@ $categories = allowedCategories();
                 <span class="tag">Inscrições abertas</span>
                 <h2>Pagamento online via Mercado Pago</h2>
                 <p>Garanta sua vaga com pagamento único de inscrição.</p>
-                <p class="price">R$ 50,00</p>
+                <p class="price">R$ 10,00</p>
                 <a class="btn btn-secondary" href="#inscricao">Ir para pagamento</a>
             </aside>
         </section>
@@ -151,7 +151,7 @@ $categories = allowedCategories();
                 <p><strong>Tema:</strong> Cuidado, Humanização e Valorização Profissional no SUS</p>
                 <p><strong>Data:</strong> 17/06/2026</p>
                 <p><strong>Local:</strong> Escola do Auditório José Malcher</p>
-                <p class="price">R$ 50,00</p>
+                <p class="price">R$ 10,00</p>
                 <p class="muted">Pagamento único via Mercado Pago.</p>
             </aside>
         </div>

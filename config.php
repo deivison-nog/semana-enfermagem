@@ -54,7 +54,7 @@ function env(string $key, ?string $default = null): ?string
     return $value;
 }
 
-const EVENT_PRICE = 50.00;
+const EVENT_PRICE = 10.00;
 const EVENT_CURRENCY = 'BRL';
 const MERCADOPAGO_API_TIMEOUT = 20;
 

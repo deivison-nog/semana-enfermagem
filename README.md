@@ -6,7 +6,7 @@ Aplicação PHP para inscrição paga da **Semana da Enfermagem – Município d
 
 - Landing page institucional com informações do evento;
 - Formulário de inscrição com validação server-side;
-- Criação de checkout Mercado Pago para inscrição de **R$ 50,00** (pagamento único);
+- Criação de checkout Mercado Pago para inscrição de **R$ 10,00** (pagamento único);
 - Páginas de retorno do pagamento:
   - `payment_success.php`
   - `payment_pending.php`
