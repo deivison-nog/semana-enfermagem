@@ -70,7 +70,8 @@ Acesse: [http://localhost:8000](http://localhost:8000)
 3. O sistema cria uma preferência de checkout no Mercado Pago usando `MERCADOPAGO_ACCESS_TOKEN`.
 4. A inscrição é salva no banco SQL.
 5. O usuário é redirecionado para pagamento.
-6. No retorno do Mercado Pago, o sistema atualiza o status de pagamento e a data de pagamento na tabela `registrations`.
+6. O sistema envia `notification_url` para o Mercado Pago (por padrão `APP_URL/payment_webhook.php`).
+7. No retorno do Mercado Pago e no webhook, o sistema atualiza status, `payment_id` e `payment_date` na tabela `registrations`.
 
 ## Área administrativa
 
@@ -94,6 +95,7 @@ php -r "echo password_hash('SUA_SENHA_FORTE', PASSWORD_DEFAULT), PHP_EOL;"
 - `payment_pending.php`: retorno de pagamento pendente
 - `payment_failure.php`: retorno de pagamento falho
 - `payment_template.php`: template de retorno e atualização de status
+- `payment_webhook.php`: webhook para atualização assíncrona de pagamento
 - `admin_login.php`: login do administrador
 - `admin_dashboard.php`: listagem de inscritos
 - `admin_logout.php`: encerramento da sessão admin

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/mercadopago.php';
 
 function renderPaymentPage(
     string $title,
@@ -14,15 +15,43 @@ function renderPaymentPage(
     ?string $redirectUrl = null
 ): void
 {
-    $paymentId = $_GET['payment_id'] ?? null;
-    $status = $_GET['status'] ?? null;
+    $paymentId = $_GET['payment_id'] ?? ($_GET['collection_id'] ?? null);
+    $status = $_GET['status'] ?? ($_GET['collection_status'] ?? null);
     $externalReference = $_GET['external_reference'] ?? null;
+    $merchantOrderId = $_GET['merchant_order_id'] ?? null;
+
+    $paymentData = null;
+    if (is_string($paymentId) && $paymentId !== '') {
+        $paymentData = mercadopagoFetchPayment($paymentId);
+    } elseif (is_string($merchantOrderId) && $merchantOrderId !== '') {
+        $paymentData = mercadopagoFetchPaymentByMerchantOrder($merchantOrderId);
+    }
+
+    if (is_array($paymentData)) {
+        if ((!is_string($paymentId) || $paymentId === '') && isset($paymentData['id'])) {
+            $paymentId = (string) $paymentData['id'];
+        }
+
+        if ((!is_string($status) || $status === '') && isset($paymentData['status']) && is_string($paymentData['status'])) {
+            $status = $paymentData['status'];
+        }
+
+        if (
+            (!is_string($externalReference) || $externalReference === '')
+            && isset($paymentData['external_reference'])
+            && is_string($paymentData['external_reference'])
+        ) {
+            $externalReference = $paymentData['external_reference'];
+        }
+    }
 
     $statusUpdateError = null;
 
     if (is_string($externalReference) && $externalReference !== '') {
         try {
-            $paymentDate = $internalStatus === 'approved' ? date('Y-m-d H:i:s') : null;
+            $paymentDate = $internalStatus === 'approved' && is_array($paymentData)
+                ? mercadopagoExtractPaymentDate($paymentData)
+                : ($internalStatus === 'approved' ? date('Y-m-d H:i:s') : null);
             $safePaymentId = is_string($paymentId) ? $paymentId : null;
             updateRegistrationPaymentStatus($externalReference, $internalStatus, $safePaymentId, $paymentDate);
         } catch (Throwable $exception) {

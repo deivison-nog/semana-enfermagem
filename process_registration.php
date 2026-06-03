@@ -93,10 +93,8 @@ $payload = [
     ],
 ];
 
-$notificationUrl = mercadopagoNotificationUrl();
-if ($notificationUrl !== null) {
-    $payload['notification_url'] = $notificationUrl;
-}
+$notificationUrl = mercadopagoNotificationUrl() ?? ($baseUrl . '/payment_webhook.php');
+$payload['notification_url'] = $notificationUrl;
 
 $ch = curl_init('https://api.mercadopago.com/checkout/preferences');
 curl_setopt_array($ch, [
