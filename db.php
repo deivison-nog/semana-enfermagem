@@ -92,6 +92,17 @@ function updateRegistrationPaymentStatus(string $externalReference, string $stat
     $stmt->execute($params);
 }
 
+function fetchRegistrationPaymentStatus(string $externalReference): ?string
+{
+    $stmt = db()->prepare(
+        'SELECT payment_status FROM registrations WHERE external_reference = :ref LIMIT 1'
+    );
+    $stmt->execute([':ref' => $externalReference]);
+    $row = $stmt->fetch();
+
+    return is_array($row) ? ($row['payment_status'] ?? null) : null;
+}
+
 function fetchRegistrations(): array
 {
     $sql = 'SELECT id,

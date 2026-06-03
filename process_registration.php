@@ -83,7 +83,7 @@ $payload = [
         'pending' => $baseUrl . '/payment_pending.php',
         'failure' => $baseUrl . '/payment_failure.php',
     ],
-    'auto_return' => 'approved',
+    'auto_return' => 'all',
     'statement_descriptor' => 'SEMANA COLAR',
     'external_reference' => $externalReference,
     'metadata' => [

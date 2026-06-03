@@ -125,6 +125,26 @@ function renderPaymentPage(
                 }, <?= (int) $redirectSeconds * 1000 ?>);
             </script>
         <?php endif; ?>
+        <?php if ($internalStatus === 'pending' && is_string($externalReference) && $externalReference !== ''): ?>
+            <script>
+                (function poll() {
+                    setTimeout(function () {
+                        fetch('payment_status_check.php?ref=' + encodeURIComponent(<?= json_encode($externalReference, JSON_UNESCAPED_UNICODE) ?>))
+                            .then(function (r) { return r.json(); })
+                            .then(function (d) {
+                                if (d.status === 'approved') {
+                                    window.location.href = 'payment_success.php?external_reference=' + encodeURIComponent(<?= json_encode($externalReference, JSON_UNESCAPED_UNICODE) ?>);
+                                } else if (d.status === 'failed') {
+                                    window.location.href = 'payment_failure.php?external_reference=' + encodeURIComponent(<?= json_encode($externalReference, JSON_UNESCAPED_UNICODE) ?>);
+                                } else {
+                                    poll();
+                                }
+                            })
+                            .catch(function () { poll(); });
+                    }, 5000);
+                })();
+            </script>
+        <?php endif; ?>
     </body>
     </html>
     <?php
