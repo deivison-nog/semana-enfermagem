@@ -14,7 +14,11 @@ if (isAdminLoggedIn()) {
 
 $error = null;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (adminUsername() === '' || adminPasswordHash() === '') {
+    $error = 'Configure ADMIN_USERNAME e ADMIN_PASSWORD_HASH no arquivo .env para habilitar o acesso.';
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $error === null) {
     $username = trim((string) ($_POST['username'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
 

@@ -73,18 +73,23 @@ function updateRegistrationPaymentStatus(string $externalReference, string $stat
 {
     $sql = 'UPDATE registrations
             SET payment_status = :payment_status,
-                payment_id = CASE WHEN :payment_id = "" THEN payment_id ELSE :payment_id END,
                 payment_date = :payment_date,
-                updated_at = NOW()
-            WHERE external_reference = :external_reference';
+                updated_at = NOW()'
+            . ($paymentId !== null && $paymentId !== '' ? ', payment_id = :payment_id' : '')
+            . ' WHERE external_reference = :external_reference';
 
-    $stmt = db()->prepare($sql);
-    $stmt->execute([
+    $params = [
         ':payment_status' => $status,
-        ':payment_id' => $paymentId ?? '',
         ':payment_date' => $paymentDate,
         ':external_reference' => $externalReference,
-    ]);
+    ];
+
+    if ($paymentId !== null && $paymentId !== '') {
+        $params[':payment_id'] = $paymentId;
+    }
+
+    $stmt = db()->prepare($sql);
+    $stmt->execute($params);
 }
 
 function fetchRegistrations(): array

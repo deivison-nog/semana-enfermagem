@@ -103,7 +103,7 @@ function adminUsername(): string
     return (string) env('ADMIN_USERNAME', 'admin');
 }
 
-function adminPassword(): string
+function adminPasswordHash(): string
 {
-    return (string) env('ADMIN_PASSWORD', 'admin123');
+    return (string) env('ADMIN_PASSWORD_HASH', '');
 }

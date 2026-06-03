@@ -40,7 +40,7 @@ DB_USER=root
 DB_PASS=
 
 ADMIN_USERNAME=admin
-ADMIN_PASSWORD=admin123
+ADMIN_PASSWORD_HASH=COLAR_HASH_GERADO
 ```
 
 ## Banco de dados SQL
@@ -78,7 +78,13 @@ Acesse: [http://localhost:8000](http://localhost:8000)
 - Painel: `admin_dashboard.php`
 - Logout: `admin_logout.php`
 
-As credenciais de login são configuradas por `ADMIN_USERNAME` e `ADMIN_PASSWORD` no `.env`.
+As credenciais de login são configuradas por `ADMIN_USERNAME` e `ADMIN_PASSWORD_HASH` no `.env`.
+
+Gere o hash da senha com PHP (exemplo):
+
+```bash
+php -r "echo password_hash('SUA_SENHA_FORTE', PASSWORD_DEFAULT), PHP_EOL;"
+```
 
 ## Estrutura
 
@@ -101,4 +107,4 @@ As credenciais de login são configuradas por `ADMIN_USERNAME` e `ADMIN_PASSWORD
 
 - **Nunca** commite tokens reais do Mercado Pago.
 - O `.env` está no `.gitignore`.
-- Troque as credenciais padrão de administrador antes de usar em produção.
+- Defina usuário e hash de senha fortes para o administrador antes de usar em produção.

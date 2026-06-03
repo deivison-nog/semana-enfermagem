@@ -12,10 +12,14 @@ function isAdminLoggedIn(): bool
 function attemptAdminLogin(string $username, string $password): bool
 {
     $validUser = adminUsername();
-    $validPass = adminPassword();
+    $validPasswordHash = adminPasswordHash();
+
+    if ($validUser === '' || $validPasswordHash === '') {
+        return false;
+    }
 
     $userMatch = hash_equals($validUser, $username);
-    $passMatch = hash_equals($validPass, $password);
+    $passMatch = password_verify($password, $validPasswordHash);
 
     if (!$userMatch || !$passMatch) {
         return false;
