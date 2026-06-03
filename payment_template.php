@@ -5,7 +5,14 @@ declare(strict_types=1);
 require_once __DIR__ . '/helpers.php';
 require_once __DIR__ . '/db.php';
 
-function renderPaymentPage(string $title, string $message, string $badgeClass, string $internalStatus): void
+function renderPaymentPage(
+    string $title,
+    string $message,
+    string $badgeClass,
+    string $internalStatus,
+    ?int $redirectSeconds = null,
+    ?string $redirectUrl = null
+): void
 {
     $paymentId = $_GET['payment_id'] ?? null;
     $status = $_GET['status'] ?? null;
@@ -23,6 +30,11 @@ function renderPaymentPage(string $title, string $message, string $badgeClass, s
         }
     }
 
+    $shouldRedirect = $redirectSeconds !== null
+        && $redirectSeconds > 0
+        && is_string($redirectUrl)
+        && $redirectUrl !== '';
+
     ?>
     <!DOCTYPE html>
     <html lang="pt-BR">
@@ -30,6 +42,9 @@ function renderPaymentPage(string $title, string $message, string $badgeClass, s
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title><?= h($title) ?></title>
+        <?php if ($shouldRedirect): ?>
+            <meta http-equiv="refresh" content="<?= h((string) $redirectSeconds . ';url=' . $redirectUrl) ?>">
+        <?php endif; ?>
         <link rel="stylesheet" href="assets/css/style.css">
     </head>
     <body class="status-body">
@@ -37,6 +52,9 @@ function renderPaymentPage(string $title, string $message, string $badgeClass, s
             <span class="status-badge <?= h($badgeClass) ?>"><?= h($title) ?></span>
             <h1><?= h($title) ?></h1>
             <p><?= h($message) ?></p>
+            <?php if ($shouldRedirect): ?>
+                <p class="muted">Você será redirecionado para a página inicial em <?= h((string) $redirectSeconds) ?> segundos.</p>
+            <?php endif; ?>
 
             <?php if ($statusUpdateError !== null): ?>
                 <p class="error-block"><?= h($statusUpdateError) ?></p>
@@ -56,6 +74,13 @@ function renderPaymentPage(string $title, string $message, string $badgeClass, s
 
             <a class="btn btn-primary" href="index.php">Voltar para o site</a>
         </main>
+        <?php if ($shouldRedirect): ?>
+            <script>
+                setTimeout(function () {
+                    window.location.href = <?= json_encode($redirectUrl, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+                }, <?= (int) $redirectSeconds * 1000 ?>);
+            </script>
+        <?php endif; ?>
     </body>
     </html>
     <?php

@@ -5,8 +5,10 @@ declare(strict_types=1);
 require __DIR__ . '/payment_template.php';
 
 renderPaymentPage(
-    'Pagamento aprovado',
-    'Sua inscrição foi confirmada com sucesso. Guarde os dados de referência para acompanhamento.',
+    'Inscrição confirmada',
+    'Pagamento confirmado com sucesso. Sua inscrição está concluída.',
     'success',
-    'approved'
+    'approved',
+    6,
+    'index.php'
 );
