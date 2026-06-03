@@ -60,7 +60,7 @@ const MERCADOPAGO_API_TIMEOUT = 20;
 
 function appBaseUrl(): string
 {
-    return rtrim((string) env('APP_URL', 'http://localhost:8000'), '/');
+    return rtrim((string) env('APP_URL', 'https://semanaenfermagem.info85.com.br'), '/');
 }
 
 function mercadopagoAccessToken(): ?string
@@ -85,12 +85,12 @@ function dbPort(): string
 
 function dbName(): string
 {
-    return (string) env('DB_NAME', 'semana_enfermagem');
+    return (string) env('DB_NAME', 'u641927335_semana_enf');
 }
 
 function dbUser(): string
 {
-    return (string) env('DB_USER', 'root');
+    return (string) env('DB_USER', 'u641927335_enfermagem');
 }
 
 function dbPass(): string
