@@ -30,10 +30,25 @@ function renderPaymentPage(
         }
     }
 
+    $safeRedirectUrl = null;
+
+    if (is_string($redirectUrl) && $redirectUrl !== '') {
+        $parsedRedirectUrl = parse_url($redirectUrl);
+        if (
+            $parsedRedirectUrl !== false
+            && !isset($parsedRedirectUrl['scheme'])
+            && !isset($parsedRedirectUrl['host'])
+            && !str_starts_with($redirectUrl, '//')
+            && !str_contains($redirectUrl, "\n")
+            && !str_contains($redirectUrl, "\r")
+        ) {
+            $safeRedirectUrl = $redirectUrl;
+        }
+    }
+
     $shouldRedirect = $redirectSeconds !== null
         && $redirectSeconds > 0
-        && is_string($redirectUrl)
-        && $redirectUrl !== '';
+        && $safeRedirectUrl !== null;
 
     ?>
     <!DOCTYPE html>
@@ -43,7 +58,7 @@ function renderPaymentPage(
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title><?= h($title) ?></title>
         <?php if ($shouldRedirect): ?>
-            <meta http-equiv="refresh" content="<?= h((string) $redirectSeconds . ';url=' . $redirectUrl) ?>">
+            <meta http-equiv="refresh" content="<?= h((string) $redirectSeconds . ';url=' . $safeRedirectUrl) ?>">
         <?php endif; ?>
         <link rel="stylesheet" href="assets/css/style.css">
     </head>
@@ -77,7 +92,7 @@ function renderPaymentPage(
         <?php if ($shouldRedirect): ?>
             <script>
                 setTimeout(function () {
-                    window.location.href = <?= json_encode($redirectUrl, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+                    window.location.href = <?= json_encode($safeRedirectUrl, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
                 }, <?= (int) $redirectSeconds * 1000 ?>);
             </script>
         <?php endif; ?>
