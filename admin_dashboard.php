@@ -12,9 +12,53 @@ requireAdminLogin();
 
 $registrations = [];
 $error = null;
+$search = trim((string) ($_GET['q'] ?? ''));
+$statusFilter = trim((string) ($_GET['payment_status'] ?? ''));
+$allowedFilterFields = ['cpf', 'email', 'telefone', 'payment_status'];
+$fieldsParam = $_GET['fields'] ?? $allowedFilterFields;
+$selectedFields = is_array($fieldsParam)
+    ? array_values(array_intersect($allowedFilterFields, array_map('strval', $fieldsParam)))
+    : $allowedFilterFields;
+
+if ($selectedFields === []) {
+    $selectedFields = $allowedFilterFields;
+}
+$availableStatuses = [];
 
 try {
     $registrations = fetchRegistrations();
+
+    foreach ($registrations as $registration) {
+        $status = (string) ($registration['payment_status'] ?? '');
+        if ($status !== '') {
+            $availableStatuses[$status] = $status;
+        }
+    }
+
+    ksort($availableStatuses);
+    $availableStatuses = array_values($availableStatuses);
+
+    if ($statusFilter !== '') {
+        $registrations = array_values(array_filter(
+            $registrations,
+            static fn (array $registration): bool => (string) ($registration['payment_status'] ?? '') === $statusFilter
+        ));
+    }
+
+    if ($search !== '') {
+        $registrations = array_values(array_filter(
+            $registrations,
+            static function (array $registration) use ($selectedFields, $search): bool {
+                foreach ($selectedFields as $field) {
+                    if (stripos((string) ($registration[$field] ?? ''), $search) !== false) {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        ));
+    }
 } catch (Throwable $exception) {
     $error = 'Não foi possível carregar os inscritos. Verifique a conexão com o banco de dados.';
 }
@@ -45,17 +89,47 @@ try {
     <?php if ($error !== null): ?>
         <p class="error-block"><?= h($error) ?></p>
     <?php else: ?>
+        <form class="card admin-filter-card no-print" method="get" action="admin_dashboard.php">
+            <div class="admin-filter-grid">
+                <label>
+                    Buscar
+                    <input type="text" name="q" value="<?= h($search) ?>" placeholder="Digite para filtrar">
+                </label>
+                <label>
+                    Status de pagamento
+                    <select name="payment_status">
+                        <option value="">Todos</option>
+                        <?php foreach ($availableStatuses as $status): ?>
+                            <option value="<?= h($status) ?>" <?= $statusFilter === $status ? 'selected' : '' ?>><?= h($status) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </label>
+            </div>
+
+            <fieldset class="admin-filter-fields">
+                <legend>Campos do filtro</legend>
+                <label><input type="checkbox" name="fields[]" value="cpf" <?= in_array('cpf', $selectedFields, true) ? 'checked' : '' ?>> CPF</label>
+                <label><input type="checkbox" name="fields[]" value="email" <?= in_array('email', $selectedFields, true) ? 'checked' : '' ?>> E-mail</label>
+                <label><input type="checkbox" name="fields[]" value="telefone" <?= in_array('telefone', $selectedFields, true) ? 'checked' : '' ?>> Telefone</label>
+                <label><input type="checkbox" name="fields[]" value="payment_status" <?= in_array('payment_status', $selectedFields, true) ? 'checked' : '' ?>> Status do pagamento</label>
+            </fieldset>
+
+            <div class="admin-filter-actions">
+                <button class="btn btn-primary" type="submit">Filtrar</button>
+                <a class="btn btn-secondary" href="admin_dashboard.php">Limpar</a>
+                <button class="btn btn-primary" type="button" onclick="window.print()">Imprimir</button>
+            </div>
+        </form>
+
         <div class="card table-card">
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Nome</th>
                         <th>CPF</th>
                         <th>E-mail</th>
                         <th>Telefone</th>
                         <th>Categoria</th>
-                        <th>Valor</th>
                         <th>Status pagamento</th>
                         <th>ID pagamento</th>
                         <th>Data pagamento</th>
@@ -66,18 +140,16 @@ try {
                 <tbody>
                 <?php if ($registrations === []): ?>
                     <tr>
-                        <td colspan="12">Nenhum inscrito encontrado.</td>
+                        <td colspan="10">Nenhum inscrito encontrado.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($registrations as $registration): ?>
                         <tr>
-                            <td><?= h((string) $registration['id']) ?></td>
                             <td><?= h((string) $registration['nome']) ?></td>
                             <td><?= h((string) $registration['cpf']) ?></td>
                             <td><?= h((string) $registration['email']) ?></td>
                             <td><?= h((string) $registration['telefone']) ?></td>
                             <td><?= h((string) $registration['categoria']) ?></td>
-                            <td>R$ <?= h(number_format((float) $registration['amount'], 2, ',', '.')) ?></td>
                             <td><?= h((string) $registration['payment_status']) ?></td>
                             <td><?= h((string) ($registration['payment_id'] ?? '')) ?></td>
                             <td><?= h((string) ($registration['payment_date'] ?? '')) ?></td>

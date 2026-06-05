@@ -226,6 +226,51 @@ input, select {
   overflow-x: auto;
 }
 
+.admin-filter-card {
+  margin-bottom: 1rem;
+}
+
+.admin-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: .9rem;
+}
+
+.admin-filter-fields {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: .8rem;
+  margin-top: .8rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .9rem;
+}
+
+.admin-filter-fields legend {
+  font-weight: 700;
+  padding: 0 .3rem;
+}
+
+.admin-filter-fields label {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.admin-filter-fields input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+.admin-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem;
+  margin-top: .9rem;
+}
+
 .admin-table {
   width: 100%;
   border-collapse: collapse;
@@ -244,4 +289,23 @@ input, select {
 .admin-table thead th {
   background: #ecfeff;
   color: #0f172a;
+}
+
+@media print {
+  .no-print,
+  .topnav {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .hero,
+  .card,
+  .status-card,
+  .schedule {
+    box-shadow: none;
+    border-radius: 0;
+  }
 }
