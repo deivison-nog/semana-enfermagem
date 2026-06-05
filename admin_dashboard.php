@@ -150,7 +150,7 @@ try {
                             <?php if (in_array('telefone', $selectedColumns, true)): ?><td><?= h((string) $registration['telefone']) ?></td><?php endif; ?>
                             <td><?= h((string) $registration['categoria']) ?></td>
                             <?php if (in_array('payment_status', $selectedColumns, true)): ?><td><?= h((string) $registration['payment_status']) ?></td><?php endif; ?>
-                            <?php if (in_array('payment_date', $selectedColumns, true)): ?><td><?= h((string) ($registration['payment_date'] ?? '')) ?></td><?php endif; ?>
+                            <?php if (in_array('payment_date', $selectedColumns, true)): ?><td><?= h($formatDate($registration['payment_date'] ?? null)) ?></td><?php endif; ?>
                             <?php if (in_array('created_at', $selectedColumns, true)): ?><td><?= h($formatDate($registration['created_at'] ?? null)) ?></td><?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
