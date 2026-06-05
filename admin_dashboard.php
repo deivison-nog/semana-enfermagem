@@ -38,7 +38,7 @@ $formatDate = static function (?string $value): string {
     try {
         return (new DateTimeImmutable($value))->format('d/m/Y');
     } catch (Exception) {
-        return $value;
+        return 'Data inválida';
     }
 };
 
