@@ -16,33 +16,26 @@ function webhookInput(): array
     return is_array($decoded) ? $decoded : [];
 }
 
-function webhookStatusFromMercadoPago(?string $status): string
-{
-    if (!is_string($status) || $status === '') {
-        return 'pending';
-    }
-
-    return match ($status) {
-        'approved' => 'approved',
-        'authorized', 'pending', 'in_process', 'in_mediation' => 'pending',
-        default => 'failed',
-    };
-}
-
 header('Content-Type: application/json; charset=utf-8');
 
 $input = webhookInput();
 
-$topic = $_GET['topic'] ?? $_GET['type'] ?? ($input['type'] ?? null);
+$topicRaw = $_GET['topic'] ?? $_GET['type'] ?? ($input['type'] ?? null);
+$topic = is_string($topicRaw) ? strtolower(trim($topicRaw)) : null;
 $resourceId = $_GET['id'] ?? ($_GET['data_id'] ?? ($input['data']['id'] ?? null));
 
 $paymentData = null;
 
-if (($topic === 'payment' || $topic === null) && (is_string($resourceId) || is_int($resourceId))) {
+if (!in_array($topic, ['payment', 'merchant_order'], true)) {
+    echo json_encode(['ok' => true]);
+    exit;
+}
+
+if ($topic === 'payment' && (is_string($resourceId) || is_int($resourceId))) {
     $paymentData = mercadopagoFetchPayment((string) $resourceId);
 }
 
-if (($topic === 'merchant_order') && (is_string($resourceId) || is_int($resourceId))) {
+if ($topic === 'merchant_order' && (is_string($resourceId) || is_int($resourceId))) {
     $paymentData = mercadopagoFetchPaymentByMerchantOrder((string) $resourceId);
 }
 
@@ -60,7 +53,7 @@ if (!is_string($externalReference) || $externalReference === '') {
     exit;
 }
 
-$internalStatus = webhookStatusFromMercadoPago(is_string($gatewayStatus) ? $gatewayStatus : null);
+$internalStatus = mercadopagoMapStatusToInternal(is_string($gatewayStatus) ? $gatewayStatus : null);
 $paymentDate = $internalStatus === 'approved' ? mercadopagoExtractPaymentDate($paymentData) : null;
 
 try {
@@ -72,4 +65,3 @@ try {
 }
 
 echo json_encode(['ok' => true]);
-

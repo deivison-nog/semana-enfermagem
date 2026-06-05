@@ -63,7 +63,13 @@ if ($errors !== []) {
     exit;
 }
 
-$externalReference = 'SE-' . date('YmdHis') . '-' . bin2hex(random_bytes(4));
+try {
+    $externalReference = 'SE-' . bin2hex(random_bytes(12));
+} catch (Throwable $exception) {
+    setFormState($old, ['checkout' => 'Não foi possível iniciar o pagamento agora. Tente novamente.']);
+    header('Location: index.php#inscricao');
+    exit;
+}
 $baseUrl = appBaseUrl();
 
 $notificationUrl = mercadopagoNotificationUrl() ?? ($baseUrl . '/payment_webhook.php');
@@ -77,7 +83,7 @@ $pixPayment = mercadopagoCreatePixPayment(
 );
 
 if (!is_array($pixPayment)) {
-    setFormState($old, ['checkout' => 'Não foi possível gerar o Pix no Mercado Pago. Verifique credenciais e tente novamente.']);
+    setFormState($old, ['checkout' => 'Não foi possível gerar o Pix agora. Tente novamente em instantes.']);
     header('Location: index.php#inscricao');
     exit;
 }
@@ -103,7 +109,7 @@ try {
         'payment_id' => $paymentId,
     ]);
 } catch (Throwable $exception) {
-    setFormState($old, ['checkout' => 'Não foi possível salvar sua inscrição no banco de dados. Verifique a configuração SQL.']);
+    setFormState($old, ['checkout' => 'Não foi possível concluir sua inscrição agora. Tente novamente em instantes.']);
     header('Location: index.php#inscricao');
     exit;
 }
