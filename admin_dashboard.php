@@ -12,17 +12,18 @@ requireAdminLogin();
 
 $registrations = [];
 $error = null;
-$search = trim((string) ($_GET['q'] ?? ''));
 $statusFilter = trim((string) ($_GET['payment_status'] ?? ''));
-$allowedFilterFields = ['cpf', 'email', 'telefone', 'payment_status'];
-$fieldsParam = $_GET['fields'] ?? $allowedFilterFields;
-$selectedFields = is_array($fieldsParam)
-    ? array_values(array_intersect($allowedFilterFields, array_map('strval', $fieldsParam)))
-    : $allowedFilterFields;
-
-if ($selectedFields === []) {
-    $selectedFields = $allowedFilterFields;
-}
+$optionalColumns = [
+    'cpf' => 'CPF',
+    'email' => 'E-mail',
+    'telefone' => 'Telefone',
+    'payment_status' => 'Status do pagamento',
+];
+$hasColumnSelection = array_key_exists('columns_visible_configured', $_GET);
+$columnsParam = $_GET['columns'] ?? ($hasColumnSelection ? [] : array_keys($optionalColumns));
+$selectedColumns = is_array($columnsParam)
+    ? array_values(array_intersect(array_keys($optionalColumns), array_map('strval', $columnsParam)))
+    : array_keys($optionalColumns);
 $availableStatuses = [];
 
 try {
@@ -42,21 +43,6 @@ try {
         $registrations = array_values(array_filter(
             $registrations,
             static fn (array $registration): bool => (string) ($registration['payment_status'] ?? '') === $statusFilter
-        ));
-    }
-
-    if ($search !== '') {
-        $registrations = array_values(array_filter(
-            $registrations,
-            static function (array $registration) use ($selectedFields, $search): bool {
-                foreach ($selectedFields as $field) {
-                    if (stripos((string) ($registration[$field] ?? ''), $search) !== false) {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
         ));
     }
 } catch (Throwable $exception) {
@@ -90,11 +76,8 @@ try {
         <p class="error-block"><?= h($error) ?></p>
     <?php else: ?>
         <form class="card admin-filter-card no-print" method="get" action="admin_dashboard.php">
+            <input type="hidden" name="columns_visible_configured" value="1">
             <div class="admin-filter-grid">
-                <label>
-                    Buscar
-                    <input type="text" name="q" value="<?= h($search) ?>" placeholder="Digite para filtrar">
-                </label>
                 <label>
                     Status de pagamento
                     <select name="payment_status">
@@ -107,11 +90,11 @@ try {
             </div>
 
             <fieldset class="admin-filter-fields">
-                <legend>Campos do filtro</legend>
-                <label><input type="checkbox" name="fields[]" value="cpf" <?= in_array('cpf', $selectedFields, true) ? 'checked' : '' ?>> CPF</label>
-                <label><input type="checkbox" name="fields[]" value="email" <?= in_array('email', $selectedFields, true) ? 'checked' : '' ?>> E-mail</label>
-                <label><input type="checkbox" name="fields[]" value="telefone" <?= in_array('telefone', $selectedFields, true) ? 'checked' : '' ?>> Telefone</label>
-                <label><input type="checkbox" name="fields[]" value="payment_status" <?= in_array('payment_status', $selectedFields, true) ? 'checked' : '' ?>> Status do pagamento</label>
+                <legend>Exibir na lista</legend>
+                <label><input type="checkbox" name="columns[]" value="cpf" <?= in_array('cpf', $selectedColumns, true) ? 'checked' : '' ?>> CPF</label>
+                <label><input type="checkbox" name="columns[]" value="email" <?= in_array('email', $selectedColumns, true) ? 'checked' : '' ?>> E-mail</label>
+                <label><input type="checkbox" name="columns[]" value="telefone" <?= in_array('telefone', $selectedColumns, true) ? 'checked' : '' ?>> Telefone</label>
+                <label><input type="checkbox" name="columns[]" value="payment_status" <?= in_array('payment_status', $selectedColumns, true) ? 'checked' : '' ?>> Status do pagamento</label>
             </fieldset>
 
             <div class="admin-filter-actions">
@@ -126,11 +109,11 @@ try {
                 <thead>
                     <tr>
                         <th>Nome</th>
-                        <th>CPF</th>
-                        <th>E-mail</th>
-                        <th>Telefone</th>
+                        <?php if (in_array('cpf', $selectedColumns, true)): ?><th>CPF</th><?php endif; ?>
+                        <?php if (in_array('email', $selectedColumns, true)): ?><th>E-mail</th><?php endif; ?>
+                        <?php if (in_array('telefone', $selectedColumns, true)): ?><th>Telefone</th><?php endif; ?>
                         <th>Categoria</th>
-                        <th>Status pagamento</th>
+                        <?php if (in_array('payment_status', $selectedColumns, true)): ?><th>Status pagamento</th><?php endif; ?>
                         <th>ID pagamento</th>
                         <th>Data pagamento</th>
                         <th>Referência</th>
@@ -140,17 +123,17 @@ try {
                 <tbody>
                 <?php if ($registrations === []): ?>
                     <tr>
-                        <td colspan="10">Nenhum inscrito encontrado.</td>
+                        <td colspan="<?= 6 + count($selectedColumns) ?>">Nenhum inscrito encontrado.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($registrations as $registration): ?>
                         <tr>
                             <td><?= h((string) $registration['nome']) ?></td>
-                            <td><?= h((string) $registration['cpf']) ?></td>
-                            <td><?= h((string) $registration['email']) ?></td>
-                            <td><?= h((string) $registration['telefone']) ?></td>
+                            <?php if (in_array('cpf', $selectedColumns, true)): ?><td><?= h((string) $registration['cpf']) ?></td><?php endif; ?>
+                            <?php if (in_array('email', $selectedColumns, true)): ?><td><?= h((string) $registration['email']) ?></td><?php endif; ?>
+                            <?php if (in_array('telefone', $selectedColumns, true)): ?><td><?= h((string) $registration['telefone']) ?></td><?php endif; ?>
                             <td><?= h((string) $registration['categoria']) ?></td>
-                            <td><?= h((string) $registration['payment_status']) ?></td>
+                            <?php if (in_array('payment_status', $selectedColumns, true)): ?><td><?= h((string) $registration['payment_status']) ?></td><?php endif; ?>
                             <td><?= h((string) ($registration['payment_id'] ?? '')) ?></td>
                             <td><?= h((string) ($registration['payment_date'] ?? '')) ?></td>
                             <td><?= h((string) $registration['external_reference']) ?></td>
