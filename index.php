@@ -108,13 +108,13 @@ $categories = allowedCategories();
             <form class="card" method="post" action="process_registration.php" novalidate>
                 <label>
                     Nome completo
-                    <input type="text" name="nome" value="<?= h(old('nome')) ?>" required>
+                    <input type="text" class="uppercase-input" name="nome" value="<?= h(old('nome')) ?>" required>
                     <?php if (isset($errors['nome'])): ?><small class="error"><?= h($errors['nome']) ?></small><?php endif; ?>
                 </label>
 
                 <label>
                     CPF
-                    <input type="text" name="cpf" value="<?= h(old('cpf')) ?>" required>
+                    <input type="text" name="cpf" value="<?= h(old('cpf')) ?>" inputmode="numeric" maxlength="14" placeholder="000.000.000-00" required>
                     <?php if (isset($errors['cpf'])): ?><small class="error"><?= h($errors['cpf']) ?></small><?php endif; ?>
                 </label>
 
@@ -126,7 +126,7 @@ $categories = allowedCategories();
 
                 <label>
                     Telefone
-                    <input type="text" name="telefone" value="<?= h(old('telefone')) ?>" required>
+                    <input type="text" name="telefone" value="<?= h(old('telefone')) ?>" inputmode="numeric" maxlength="15" placeholder="(91)98888-88888" required>
                     <?php if (isset($errors['telefone'])): ?><small class="error"><?= h($errors['telefone']) ?></small><?php endif; ?>
                 </label>
 
@@ -174,5 +174,58 @@ $categories = allowedCategories();
         <p>Secretaria Municipal de Saúde de Colares • Semana da Enfermagem 2026</p>
     </div>
 </footer>
+<script>
+    (function () {
+        var nomeInput = document.querySelector('input[name="nome"]');
+        var cpfInput = document.querySelector('input[name="cpf"]');
+        var telefoneInput = document.querySelector('input[name="telefone"]');
+
+        function onlyDigits(value) {
+            return value.replace(/\D+/g, '');
+        }
+
+        function formatCpf(value) {
+            var digits = onlyDigits(value).slice(0, 11);
+
+            if (digits.length <= 3) return digits;
+            if (digits.length <= 6) return digits.slice(0, 3) + '.' + digits.slice(3);
+            if (digits.length <= 9) return digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6);
+            return digits.slice(0, 3) + '.' + digits.slice(3, 6) + '.' + digits.slice(6, 9) + '-' + digits.slice(9);
+        }
+
+        function formatPhone(value) {
+            var digits = onlyDigits(value).slice(0, 12);
+
+            if (digits.length <= 2) return digits;
+
+            var ddd = digits.slice(0, 2);
+            var number = digits.slice(2);
+
+            if (number.length <= 5) return '(' + ddd + ')' + number;
+            return '(' + ddd + ')' + number.slice(0, 5) + '-' + number.slice(5);
+        }
+
+        if (nomeInput) {
+            nomeInput.addEventListener('input', function () {
+                nomeInput.value = nomeInput.value.toUpperCase();
+            });
+            nomeInput.value = nomeInput.value.toUpperCase();
+        }
+
+        if (cpfInput) {
+            cpfInput.addEventListener('input', function () {
+                cpfInput.value = formatCpf(cpfInput.value);
+            });
+            cpfInput.value = formatCpf(cpfInput.value);
+        }
+
+        if (telefoneInput) {
+            telefoneInput.addEventListener('input', function () {
+                telefoneInput.value = formatPhone(telefoneInput.value);
+            });
+            telefoneInput.value = formatPhone(telefoneInput.value);
+        }
+    })();
+</script>
 </body>
 </html>

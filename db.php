@@ -163,3 +163,16 @@ function fetchRegistrations(): array
 
     return db()->query($sql)->fetchAll();
 }
+
+function hasApprovedRegistrationByCpf(string $cpf): bool
+{
+    $stmt = db()->prepare(
+        'SELECT 1 FROM registrations WHERE cpf = :cpf AND payment_status = :payment_status LIMIT 1'
+    );
+    $stmt->execute([
+        ':cpf' => $cpf,
+        ':payment_status' => 'approved',
+    ]);
+
+    return $stmt->fetchColumn() !== false;
+}

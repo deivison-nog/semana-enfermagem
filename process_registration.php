@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$nome = trim((string) ($_POST['nome'] ?? ''));
+$nome = mb_strtoupper(trim((string) ($_POST['nome'] ?? '')), 'UTF-8');
 $cpfRaw = preg_replace('/\D+/', '', (string) ($_POST['cpf'] ?? ''));
 $cpf = is_string($cpfRaw) ? $cpfRaw : '';
 $email = trim((string) ($_POST['email'] ?? ''));
@@ -38,6 +38,10 @@ if (mb_strlen($nome) < 3) {
 
 if (!preg_match('/^\d{11}$/', $cpf)) {
     $errors['cpf'] = 'Informe um CPF válido com 11 dígitos.';
+}
+
+if (!isset($errors['cpf']) && hasApprovedRegistrationByCpf($cpf)) {
+    $errors['checkout'] = 'O CPF informado já está com a inscrição aprovada!';
 }
 
 if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
