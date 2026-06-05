@@ -18,15 +18,29 @@ $optionalColumns = [
     'email' => 'E-mail',
     'telefone' => 'Telefone',
     'payment_status' => 'Status do pagamento',
+    'payment_date' => 'Data pagamento',
+    'created_at' => 'Data inscrição',
 ];
 $hasColumnSelection = array_key_exists('columns_visible_configured', $_GET);
 $columnsParam = $_GET['columns'] ?? ($hasColumnSelection ? [] : array_keys($optionalColumns));
 $selectedColumns = is_array($columnsParam)
     ? array_values(array_intersect(array_keys($optionalColumns), array_map('strval', $columnsParam)))
     : array_keys($optionalColumns);
-$fixedColumnCount = 6;
+$fixedColumnCount = 2;
 $tableColumnCount = $fixedColumnCount + count($selectedColumns);
 $availableStatuses = [];
+
+$formatDate = static function (?string $value): string {
+    if (!is_string($value) || trim($value) === '') {
+        return '';
+    }
+
+    try {
+        return (new DateTimeImmutable($value))->format('d/m/Y');
+    } catch (Exception) {
+        return $value;
+    }
+};
 
 try {
     $registrations = fetchRegistrations();
@@ -97,6 +111,8 @@ try {
                 <label><input type="checkbox" name="columns[]" value="email" <?= in_array('email', $selectedColumns, true) ? 'checked' : '' ?>> E-mail</label>
                 <label><input type="checkbox" name="columns[]" value="telefone" <?= in_array('telefone', $selectedColumns, true) ? 'checked' : '' ?>> Telefone</label>
                 <label><input type="checkbox" name="columns[]" value="payment_status" <?= in_array('payment_status', $selectedColumns, true) ? 'checked' : '' ?>> Status do pagamento</label>
+                <label><input type="checkbox" name="columns[]" value="payment_date" <?= in_array('payment_date', $selectedColumns, true) ? 'checked' : '' ?>> Data pagamento</label>
+                <label><input type="checkbox" name="columns[]" value="created_at" <?= in_array('created_at', $selectedColumns, true) ? 'checked' : '' ?>> Data inscrição</label>
             </fieldset>
 
             <div class="admin-filter-actions">
@@ -116,10 +132,8 @@ try {
                         <?php if (in_array('telefone', $selectedColumns, true)): ?><th>Telefone</th><?php endif; ?>
                         <th>Categoria</th>
                         <?php if (in_array('payment_status', $selectedColumns, true)): ?><th>Status pagamento</th><?php endif; ?>
-                        <th>ID pagamento</th>
-                        <th>Data pagamento</th>
-                        <th>Referência</th>
-                        <th>Data inscrição</th>
+                        <?php if (in_array('payment_date', $selectedColumns, true)): ?><th>Data pagamento</th><?php endif; ?>
+                        <?php if (in_array('created_at', $selectedColumns, true)): ?><th>Data inscrição</th><?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
@@ -136,10 +150,8 @@ try {
                             <?php if (in_array('telefone', $selectedColumns, true)): ?><td><?= h((string) $registration['telefone']) ?></td><?php endif; ?>
                             <td><?= h((string) $registration['categoria']) ?></td>
                             <?php if (in_array('payment_status', $selectedColumns, true)): ?><td><?= h((string) $registration['payment_status']) ?></td><?php endif; ?>
-                            <td><?= h((string) ($registration['payment_id'] ?? '')) ?></td>
-                            <td><?= h((string) ($registration['payment_date'] ?? '')) ?></td>
-                            <td><?= h((string) $registration['external_reference']) ?></td>
-                            <td><?= h((string) $registration['created_at']) ?></td>
+                            <?php if (in_array('payment_date', $selectedColumns, true)): ?><td><?= h((string) ($registration['payment_date'] ?? '')) ?></td><?php endif; ?>
+                            <?php if (in_array('created_at', $selectedColumns, true)): ?><td><?= h($formatDate($registration['created_at'] ?? null)) ?></td><?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
