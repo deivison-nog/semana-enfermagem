@@ -175,6 +175,29 @@ input, select {
 .status-badge.pending { background: #fef3c7; color: var(--warning); }
 .status-badge.failure { background: #fee2e2; color: var(--danger); }
 
+.pix-card {
+  display: grid;
+  gap: .9rem;
+}
+
+.pix-qr-image {
+  width: min(320px, 100%);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.pix-code-label {
+  margin-bottom: 0;
+}
+
+.pix-code {
+  min-height: 90px;
+  resize: none;
+  font-family: monospace;
+  font-size: .95rem;
+}
+
 @media (max-width: 900px) {
   .hero-grid,
   .form-layout {

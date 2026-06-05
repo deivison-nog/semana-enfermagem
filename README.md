@@ -6,7 +6,7 @@ Aplicação PHP para inscrição paga da **Semana da Enfermagem – Município d
 
 - Landing page institucional com informações do evento;
 - Formulário de inscrição com validação server-side;
-- Criação de checkout Mercado Pago para inscrição de **R$ 10,00** (pagamento único);
+- Checkout transparente Pix do Mercado Pago para inscrição de **R$ 10,00** (pagamento único);
 - Persistência das inscrições em banco de dados MySQL;
 - Atualização do status de pagamento no retorno (aprovado, pendente, falho), incluindo data de pagamento;
 - Login de administrador;
@@ -67,11 +67,11 @@ Acesse: [http://localhost:8000](http://localhost:8000)
 
 1. O participante preenche o formulário na home.
 2. O backend valida os dados no `process_registration.php`.
-3. O sistema cria uma preferência de checkout no Mercado Pago usando `MERCADOPAGO_ACCESS_TOKEN`.
-4. A inscrição é salva no banco SQL.
-5. O usuário é redirecionado para pagamento.
+3. O sistema cria o pagamento Pix via API de Payments do Mercado Pago usando `MERCADOPAGO_ACCESS_TOKEN`.
+4. A inscrição é salva no banco SQL com `external_reference` e `payment_id`.
+5. O usuário é redirecionado para `payment_pix.php`, onde vê QR Code e código copia-e-cola sem sair do site.
 6. O sistema envia `notification_url` para o Mercado Pago (por padrão `APP_URL/payment_webhook.php`).
-7. No retorno do Mercado Pago e no webhook, o sistema atualiza status, `payment_id` e `payment_date` na tabela `registrations`.
+7. No webhook e na verificação periódica, o sistema atualiza status, `payment_id` e `payment_date` na tabela `registrations`.
 
 ## Área administrativa
 
@@ -90,7 +90,8 @@ php -r "echo password_hash('SUA_SENHA_FORTE', PASSWORD_DEFAULT), PHP_EOL;"
 ## Estrutura
 
 - `index.php`: landing page + formulário de inscrição
-- `process_registration.php`: validação + checkout + gravação da inscrição
+- `process_registration.php`: validação + criação do Pix + gravação da inscrição
+- `payment_pix.php`: tela interna de pagamento com QR Code Pix e polling de status
 - `payment_success.php`: retorno de pagamento aprovado
 - `payment_pending.php`: retorno de pagamento pendente
 - `payment_failure.php`: retorno de pagamento falho

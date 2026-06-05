@@ -7,6 +7,7 @@ session_start();
 require __DIR__ . '/config.php';
 require __DIR__ . '/helpers.php';
 require __DIR__ . '/db.php';
+require __DIR__ . '/mercadopago.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Location: index.php');
@@ -65,71 +66,25 @@ if ($errors !== []) {
 $externalReference = 'SE-' . date('YmdHis') . '-' . bin2hex(random_bytes(4));
 $baseUrl = appBaseUrl();
 
-$payload = [
-    'items' => [[
-        'id' => $externalReference,
-        'title' => 'Inscrição - Semana da Enfermagem 2026',
-        'description' => 'Semana da Enfermagem – Município de Colares 2026',
-        'quantity' => 1,
-        'currency_id' => EVENT_CURRENCY,
-        'unit_price' => EVENT_PRICE,
-    ]],
-    'payer' => [
-        'name' => $nome,
-        'email' => $email,
-    ],
-    'back_urls' => [
-        'success' => $baseUrl . '/payment_success.php',
-        'pending' => $baseUrl . '/payment_pending.php',
-        'failure' => $baseUrl . '/payment_failure.php',
-    ],
-    'auto_return' => 'all',
-    'statement_descriptor' => 'SEMANA COLAR',
-    'external_reference' => $externalReference,
-    'metadata' => [
-        'cpf' => $cpf,
-        'telefone' => $telefone,
-        'categoria' => $categoria,
-    ],
-];
-
 $notificationUrl = mercadopagoNotificationUrl() ?? ($baseUrl . '/payment_webhook.php');
-$payload['notification_url'] = $notificationUrl;
+$pixPayment = mercadopagoCreatePixPayment(
+    $externalReference,
+    'Inscrição - Semana da Enfermagem 2026',
+    EVENT_PRICE,
+    $email,
+    $nome,
+    $notificationUrl
+);
 
-$ch = curl_init('https://api.mercadopago.com/checkout/preferences');
-curl_setopt_array($ch, [
-    CURLOPT_RETURNTRANSFER => true,
-    CURLOPT_POST => true,
-    CURLOPT_HTTPHEADER => [
-        'Authorization: Bearer ' . $accessToken,
-        'Content-Type: application/json',
-    ],
-    CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-    CURLOPT_TIMEOUT => MERCADOPAGO_API_TIMEOUT,
-]);
-
-$response = curl_exec($ch);
-$httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-$curlError = curl_error($ch);
-curl_close($ch);
-
-if ($curlError !== '' || $response === false) {
-    setFormState($old, ['checkout' => 'Falha de conexão ao Mercado Pago. Verifique sua internet e tente novamente.']);
+if (!is_array($pixPayment)) {
+    setFormState($old, ['checkout' => 'Não foi possível gerar o Pix no Mercado Pago. Verifique credenciais e tente novamente.']);
     header('Location: index.php#inscricao');
     exit;
 }
 
-if ($httpCode >= 400) {
-    setFormState($old, ['checkout' => 'O Mercado Pago recusou a solicitação. Verifique suas credenciais de integração.']);
-    header('Location: index.php#inscricao');
-    exit;
-}
-
-$data = json_decode($response, true);
-$checkoutUrl = is_array($data) ? ($data['init_point'] ?? null) : null;
-
-if (!is_string($checkoutUrl) || $checkoutUrl === '') {
-    setFormState($old, ['checkout' => 'Resposta inválida do Mercado Pago. Verifique as credenciais e tente novamente.']);
+$paymentId = $pixPayment['payment_id'] ?? null;
+if (!is_string($paymentId) || $paymentId === '') {
+    setFormState($old, ['checkout' => 'Resposta inválida do Mercado Pago ao gerar o Pix.']);
     header('Location: index.php#inscricao');
     exit;
 }
@@ -144,7 +99,8 @@ try {
         'categoria' => $categoria,
         'amount' => EVENT_PRICE,
         'currency' => EVENT_CURRENCY,
-        'payment_status' => 'checkout_iniciado',
+        'payment_status' => mercadopagoMapStatusToInternal($pixPayment['status'] ?? null),
+        'payment_id' => $paymentId,
     ]);
 } catch (Throwable $exception) {
     setFormState($old, ['checkout' => 'Não foi possível salvar sua inscrição no banco de dados. Verifique a configuração SQL.']);
@@ -153,7 +109,12 @@ try {
 }
 
 clearOldInputs();
-$_SESSION['success'] = 'Inscrição validada. Você será redirecionado para concluir o pagamento.';
+$_SESSION['success'] = 'Inscrição validada. Você será direcionado ao pagamento Pix.';
+$_SESSION['pix_checkout'][$externalReference] = [
+    'payment_id' => $paymentId,
+    'qr_code' => $pixPayment['qr_code'] ?? null,
+    'qr_code_base64' => $pixPayment['qr_code_base64'] ?? null,
+];
 
-header('Location: ' . $checkoutUrl);
+header('Location: payment_pix.php?ref=' . urlencode($externalReference));
 exit;

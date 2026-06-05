@@ -8,14 +8,17 @@ header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
 $ref = trim((string) ($_GET['ref'] ?? ''));
+$paymentId = trim((string) ($_GET['payment_id'] ?? ''));
 
-if ($ref === '') {
+if ($ref === '' && $paymentId === '') {
     echo json_encode(['status' => null]);
     exit;
 }
 
 try {
-    $status = fetchRegistrationPaymentStatus($ref);
+    $status = $ref !== ''
+        ? fetchRegistrationPaymentStatus($ref)
+        : fetchRegistrationPaymentStatusByPaymentId($paymentId);
     echo json_encode(['status' => $status]);
 } catch (Throwable $exception) {
     echo json_encode(['status' => null]);

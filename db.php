@@ -29,6 +29,8 @@ function db(): PDO
 
 function createRegistration(array $data): void
 {
+    $hasPaymentId = isset($data['payment_id']) && is_string($data['payment_id']) && $data['payment_id'] !== '';
+
     $sql = 'INSERT INTO registrations (
                 external_reference,
                 nome,
@@ -38,7 +40,10 @@ function createRegistration(array $data): void
                 categoria,
                 amount,
                 currency,
-                payment_status,
+                payment_status,'
+             . ($hasPaymentId ? '
+                payment_id,' : '')
+             . '
                 created_at,
                 updated_at
             ) VALUES (
@@ -50,13 +55,15 @@ function createRegistration(array $data): void
                 :categoria,
                 :amount,
                 :currency,
-                :payment_status,
+                :payment_status,'
+             . ($hasPaymentId ? '
+                :payment_id,' : '')
+             . '
                 NOW(),
                 NOW()
             )';
 
-    $stmt = db()->prepare($sql);
-    $stmt->execute([
+    $params = [
         ':external_reference' => $data['external_reference'],
         ':nome' => $data['nome'],
         ':cpf' => $data['cpf'],
@@ -66,7 +73,14 @@ function createRegistration(array $data): void
         ':amount' => $data['amount'],
         ':currency' => $data['currency'],
         ':payment_status' => $data['payment_status'],
-    ]);
+    ];
+
+    if ($hasPaymentId) {
+        $params[':payment_id'] = $data['payment_id'];
+    }
+
+    $stmt = db()->prepare($sql);
+    $stmt->execute($params);
 }
 
 function updateRegistrationPaymentStatus(string $externalReference, string $status, ?string $paymentId, ?string $paymentDate): void
@@ -101,6 +115,31 @@ function fetchRegistrationPaymentStatus(string $externalReference): ?string
     $row = $stmt->fetch();
 
     return is_array($row) ? ($row['payment_status'] ?? null) : null;
+}
+
+function fetchRegistrationPaymentStatusByPaymentId(string $paymentId): ?string
+{
+    $stmt = db()->prepare(
+        'SELECT payment_status FROM registrations WHERE payment_id = :payment_id LIMIT 1'
+    );
+    $stmt->execute([':payment_id' => $paymentId]);
+    $row = $stmt->fetch();
+
+    return is_array($row) ? ($row['payment_status'] ?? null) : null;
+}
+
+function fetchRegistrationByExternalReference(string $externalReference): ?array
+{
+    $stmt = db()->prepare(
+        'SELECT external_reference, nome, email, amount, currency, payment_status, payment_id
+         FROM registrations
+         WHERE external_reference = :ref
+         LIMIT 1'
+    );
+    $stmt->execute([':ref' => $externalReference]);
+    $row = $stmt->fetch();
+
+    return is_array($row) ? $row : null;
 }
 
 function fetchRegistrations(): array

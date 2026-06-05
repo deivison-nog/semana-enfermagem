@@ -98,7 +98,7 @@ $categories = allowedCategories();
 
     <section class="container section" id="inscricao">
         <h2>Inscrição online</h2>
-        <p class="section-note">Preencha seus dados para gerar o checkout no Mercado Pago.</p>
+        <p class="section-note">Preencha seus dados para gerar o QR Code Pix e pagar sem sair do site.</p>
 
         <?php if ($successMessage !== null): ?>
             <div class="alert alert-success"><?= h($successMessage) ?></div>
@@ -153,7 +153,7 @@ $categories = allowedCategories();
                 <p><strong>Data:</strong> 17/06/2026</p>
                 <p><strong>Local:</strong> Escola do Auditório José Malcher</p>
                 <p class="price">R$ 10,00</p>
-                <p class="muted">Pagamento único via Mercado Pago.</p>
+                <p class="muted">Pagamento único via Pix (checkout transparente).</p>
             </aside>
         </div>
     </section>
