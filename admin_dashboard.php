@@ -24,6 +24,8 @@ $columnsParam = $_GET['columns'] ?? ($hasColumnSelection ? [] : array_keys($opti
 $selectedColumns = is_array($columnsParam)
     ? array_values(array_intersect(array_keys($optionalColumns), array_map('strval', $columnsParam)))
     : array_keys($optionalColumns);
+$fixedColumnCount = 6;
+$tableColumnCount = $fixedColumnCount + count($selectedColumns);
 $availableStatuses = [];
 
 try {
@@ -123,7 +125,7 @@ try {
                 <tbody>
                 <?php if ($registrations === []): ?>
                     <tr>
-                        <td colspan="<?= 6 + count($selectedColumns) ?>">Nenhum inscrito encontrado.</td>
+                        <td colspan="<?= $tableColumnCount ?>">Nenhum inscrito encontrado.</td>
                     </tr>
                 <?php else: ?>
                     <?php foreach ($registrations as $registration): ?>
