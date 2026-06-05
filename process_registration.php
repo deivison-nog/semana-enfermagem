@@ -48,7 +48,7 @@ if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
     $errors['email'] = 'Informe um e-mail válido.';
 }
 
-if (strlen($telefone) < 10 || strlen($telefone) > 11) {
+if (strlen($telefone) < 10 || strlen($telefone) > 12) {
     $errors['telefone'] = 'Informe um telefone válido com DDD.';
 }
 
